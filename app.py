@@ -24,7 +24,6 @@ def index():
             return redirect(request.url)
         if file:
             image = Image.open(file.stream)
-            # Assuming the skin color is the most frequent color in the image for simplicity
             colors = image.getcolors(image.size[0] * image.size[1])
             most_frequent_color = max(colors, key=lambda t: t[0])[1]
             triadic_colors = get_triadic_colors(*most_frequent_color)
@@ -32,4 +31,5 @@ def index():
     return render_template('index.html')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+
