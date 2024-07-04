@@ -41,6 +41,10 @@ label {
     display: inline-block;
 }
 
+label:hover {
+    background-color: #5b4cc7;
+}
+
 input[type="submit"] {
     background-color: #00b894;
     color: white;
@@ -77,4 +81,3 @@ li {
         font-size: 2em;
     }
 }
-
