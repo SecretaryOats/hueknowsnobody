@@ -11,16 +11,24 @@
     <div class="container">
         <h1>Skin Color Analyzer</h1>
         <form method="post" enctype="multipart/form-data">
+            <label for="file-input">Choose a file</label>
             <input type="file" name="file" id="file-input">
             <input type="submit" value="Upload">
         </form>
         {% if triadic_colors %}
-            <h2>Suggested Colors:</h2>
-            <ul>
-                {% for color in triadic_colors %}
-                    <li style="background-color: rgb{{color}};">RGB {{color}}</li>
-                {% endfor %}
-            </ul>
+            <div class="result-box">
+                <h2>Suggested Colors:</h2>
+                <ul>
+                    {% for color in triadic_colors %}
+                        <li style="background-color: rgb{{color}};">RGB {{color}}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="classification-box">
+                <h2>Classification:</h2>
+                <p>Skin Tone: {{ tone }}</p>
+                <p>Seasonal Type: {{ season }}</p>
+            </div>
         {% endif %}
     </div>
 </body>
