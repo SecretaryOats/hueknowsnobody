@@ -16,14 +16,20 @@
             <input type="submit" value="Upload">
         </form>
         {% if triadic_colors %}
-            <h2>Suggested Colors:</h2>
-            <ul>
-                {% for color in triadic_colors %}
-                    <li style="background-color: rgb{{color}};">RGB {{color}}</li>
-                {% endfor %}
-            </ul>
+            <div class="result-box">
+                <h2>Suggested Colors:</h2>
+                <ul>
+                    {% for color in triadic_colors %}
+                        <li style="background-color: rgb{{color}};">RGB {{color}}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="classification-box">
+                <h2>Classification:</h2>
+                <p>Skin Tone: {{ tone }}</p>
+                <p>Seasonal Type: {{ season }}</p>
+            </div>
         {% endif %}
     </div>
 </body>
 </html>
-
