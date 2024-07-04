@@ -18,18 +18,23 @@ def get_triadic_colors(r, g, b):
 def index():
     if request.method == 'POST':
         if 'file' not in request.files:
+            print("No file part")
             return redirect(request.url)
         file = request.files['file']
         if file.filename == '':
+            print("No selected file")
             return redirect(request.url)
         if file:
-            image = Image.open(file.stream)
-            colors = image.getcolors(image.size[0] * image.size[1])
-            most_frequent_color = max(colors, key=lambda t: t[0])[1]
-            triadic_colors = get_triadic_colors(*most_frequent_color)
-            return render_template('index.html', triadic_colors=triadic_colors)
+            try:
+                image = Image.open(file.stream)
+                colors = image.getcolors(image.size[0] * image.size[1])
+                most_frequent_color = max(colors, key=lambda t: t[0])[1]
+                triadic_colors = get_triadic_colors(*most_frequent_color)
+                return render_template('index.html', triadic_colors=triadic_colors)
+            except Exception as e:
+                print(f"Error processing file: {e}")
+                return redirect(request.url)
     return render_template('index.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
-
