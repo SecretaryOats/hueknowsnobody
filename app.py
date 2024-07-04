@@ -1,18 +1,20 @@
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template, redirect
 from PIL import Image
 import colorsys
 import os
+import random
 
 app = Flask(__name__)
 
-def get_triadic_colors(r, g, b):
-    h, l, s = colorsys.rgb_to_hls(r / 255.0, g / 255.0, b / 255.0)
-    triadic_colors = []
-    for i in range(3):
-        triadic_h = (h + i * 1/3) % 1.0
-        triadic_r, triadic_g, triadic_b = colorsys.hls_to_rgb(triadic_h, l, s)
-        triadic_colors.append((int(triadic_r * 255), int(triadic_g * 255), int(triadic_b * 255)))
-    return triadic_colors
+def generate_aesthetic_palette(num_colors=5):
+    palette = []
+    for _ in range(num_colors):
+        h = random.random()  # Random hue
+        s = random.uniform(0.4, 0.7)  # Saturation between 40% and 70%
+        l = random.uniform(0.5, 0.8)  # Lightness between 50% and 80%
+        r, g, b = colorsys.hls_to_rgb(h, l, s)
+        palette.append((int(r * 255), int(g * 255), int(b * 255)))
+    return palette
 
 def classify_skin_tone(r, g, b):
     # Determine warm or cool based on saturation
@@ -48,9 +50,9 @@ def index():
                 image = Image.open(file.stream)
                 colors = image.getcolors(image.size[0] * image.size[1])
                 most_frequent_color = max(colors, key=lambda t: t[0])[1]
-                triadic_colors = get_triadic_colors(*most_frequent_color)
+                palette = generate_aesthetic_palette()
                 tone, season = classify_skin_tone(*most_frequent_color)
-                return render_template('index.html', triadic_colors=triadic_colors, tone=tone, season=season)
+                return render_template('index.html', palette=palette, tone=tone, season=season)
             except Exception as e:
                 print(f"Error processing file: {e}")
                 return redirect(request.url)
@@ -58,3 +60,4 @@ def index():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+
