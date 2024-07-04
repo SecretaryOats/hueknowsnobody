@@ -2,33 +2,24 @@ from flask import Flask, request, render_template, redirect, url_for
 from PIL import Image
 import colorsys
 import os
-import random
-from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-UPLOAD_FOLDER = 'static/uploads'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-def generate_aesthetic_palette(num_colors=5):
-    palette = []
-    for _ in range(num_colors):
-        h = random.random()  # Random hue
-        s = random.uniform(0.4, 0.7)  # Saturation between 40% and 70%
-        l = random.uniform(0.5, 0.8)  # Lightness between 50% and 80%
-        r, g, b = colorsys.hls_to_rgb(h, l, s)
-        palette.append((int(r * 255), int(g * 255), int(b * 255)))
-    return palette
+def get_triadic_colors(r, g, b):
+    h, l, s = colorsys.rgb_to_hls(r / 255.0, g / 255.0, b / 255.0)
+    triadic_colors = []
+    for i in range(3):
+        triadic_h = (h + i * 1/3) % 1.0
+        triadic_r, triadic_g, triadic_b = colorsys.hls_to_rgb(triadic_h, l, s)
+        triadic_colors.append((int(triadic_r * 255), int(triadic_g * 255), int(triadic_b * 255)))
+    return triadic_colors
 
 def classify_skin_tone(r, g, b):
+    # Determine warm or cool based on saturation
     _, s, _ = colorsys.rgb_to_hls(r / 255.0, g / 255.0, b / 255.0)
     tone = "Warm" if s > 0.5 else "Cool"
     
+    # Determine season
     season = "Spring"
     if tone == "Warm":
         if r > g and r > b:
@@ -52,17 +43,14 @@ def index():
         if file.filename == '':
             print("No selected file")
             return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
+        if file:
             try:
-                image = Image.open(filepath)
+                image = Image.open(file.stream)
                 colors = image.getcolors(image.size[0] * image.size[1])
                 most_frequent_color = max(colors, key=lambda t: t[0])[1]
-                palette = generate_aesthetic_palette()
+                triadic_colors = get_triadic_colors(*most_frequent_color)
                 tone, season = classify_skin_tone(*most_frequent_color)
-                return render_template('index.html', palette=palette, tone=tone, season=season, image_url=filepath)
+                return render_template('index.html', triadic_colors=triadic_colors, tone=tone, season=season)
             except Exception as e:
                 print(f"Error processing file: {e}")
                 return redirect(request.url)
