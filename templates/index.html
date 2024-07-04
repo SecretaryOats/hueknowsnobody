@@ -30,6 +30,13 @@
                 <p>Seasonal Type: {{ season }}</p>
             </div>
         {% endif %}
+        {% if image_url %}
+            <div class="image-box">
+                <h2>Uploaded Image:</h2>
+                <img src="{{ url_for('static', filename=image_url) }}" alt="Uploaded Image">
+            </div>
+        {% endif %}
     </div>
 </body>
 </html>
+
