@@ -3,8 +3,17 @@ from PIL import Image
 import colorsys
 import os
 import random
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+
+UPLOAD_FOLDER = 'static/uploads'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def generate_aesthetic_palette(num_colors=5):
     palette = []
@@ -15,35 +24,6 @@ def generate_aesthetic_palette(num_colors=5):
         r, g, b = colorsys.hls_to_rgb(h, l, s)
         palette.append((int(r * 255), int(g * 255), int(b * 255)))
     return palette
-
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    if request.method == 'POST':
-        if 'file' not in request.files:
-            print("No file part")
-            return redirect(request.url)
-        file = request.files['file']
-        if file.filename == '':
-            print("No selected file")
-            return redirect(request.url)
-        if file:
-            try:
-                image = Image.open(file.stream)
-                colors = image.getcolors(image.size[0] * image.size[1])
-                most_frequent_color = max(colors, key=lambda t: t[0])[1]
-                palette = generate_aesthetic_palette()
-                tone, season = classify_skin_tone(*most_frequent_color)
-                return render_template('index.html', palette=palette, tone=tone, season=season)
-            except Exception as e:
-                print(f"Error processing file: {e}")
-                return redirect(request.url)
-    return render_template('index.html')
 
 def classify_skin_tone(r, g, b):
     _, s, _ = colorsys.rgb_to_hls(r / 255.0, g / 255.0, b / 255.0)
@@ -61,6 +41,32 @@ def classify_skin_tone(r, g, b):
         else:
             season = "Summer"
     return tone, season
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            print("No file part")
+            return redirect(request.url)
+        file = request.files['file']
+        if file.filename == '':
+            print("No selected file")
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+            try:
+                image = Image.open(filepath)
+                colors = image.getcolors(image.size[0] * image.size[1])
+                most_frequent_color = max(colors, key=lambda t: t[0])[1]
+                palette = generate_aesthetic_palette()
+                tone, season = classify_skin_tone(*most_frequent_color)
+                return render_template('index.html', palette=palette, tone=tone, season=season, image_url=filepath)
+            except Exception as e:
+                print(f"Error processing file: {e}")
+                return redirect(request.url)
+    return render_template('index.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
