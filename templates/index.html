@@ -3,22 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HueKnows? We do!</title>
+    <title>Skin Color Analyzer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sauce+One:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>HueKnows? We do!</h1>
-    <form method="post" enctype="multipart/form-data">
-        <input type="file" name="file">
-        <input type="submit" value="Upload">
-    </form>
-    {% if triadic_colors %}
-        <h2>Suggested Colors:</h2>
-        <ul>
-            {% for color in triadic_colors %}
-                <li style="background-color: rgb{{color}};">RGB {{color}}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+    <div class="container">
+        <h1>Skin Color Analyzer</h1>
+        <form method="post" enctype="multipart/form-data">
+            <input type="file" name="file" id="file-input">
+            <input type="submit" value="Upload">
+        </form>
+        {% if triadic_colors %}
+            <h2>Suggested Colors:</h2>
+            <ul>
+                {% for color in triadic_colors %}
+                    <li style="background-color: rgb{{color}};">RGB {{color}}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
 </body>
 </html>
